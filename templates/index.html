@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✨ Todo List & Server Health</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body class="bg-light">
+<div id="loader-wrapper">
+    <div class="spinner"></div>
+</div>
+
+<div class="container py-4 fade-in">
+    <h2 class="mb-4">📝 My Todo List</h2>
+    <form method="POST" action="/add" class="d-flex gap-2 mb-3">
+        <input type="text" class="form-control" name="task" placeholder="Enter a new task ✨" required>
+        <button class="btn btn-primary" type="submit">➕ Add</button>
+    </form>
+
+    <!-- Pending Tasks -->
+    <h4>⏳ Pending Tasks</h4>
+    <ul class="list-group mb-4">
+        {% for todo in pending %}
+            <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded task-item">
+                <span>🕒 {{ todo.task }} <small class="text-muted">({{ todo.time }})</small></span>
+                <div class="btn-group">
+                    <a href="/complete/{{ loop.index0 }}" class="btn btn-sm btn-success">✔</a>
+                    <button class="btn btn-sm btn-warning" onclick="showUpdateForm({{ loop.index0 }}, '{{ todo.task }}')">✎</button>
+                    <a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger" onclick="return confirm('❌ Are you sure you want to delete this task?');">🗑</a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Completed Tasks -->
+    <h4>✅ Completed Tasks</h4>
+    <ul class="list-group mb-4">
+        {% for todo in completed %}
+            <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded bg-success bg-opacity-10 task-item">
+                <span>✅ <del>{{ todo.task }}</del> <small class="text-muted">({{ todo.time }})</small></span>
+                <a href="/delete/{{ loop.index0 }}" class="btn btn-sm btn-danger" onclick="return confirm('❌ Delete completed task?');">🗑</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Hidden update form -->
+    <form id="updateForm" method="POST" class="d-none mb-4" style="animation: fadeIn 0.5s;">
+        <div class="input-group">
+            <input type="text" class="form-control" id="updateTaskInput" name="task" required>
+            <button class="btn btn-success" type="submit">💾 Save</button>
+            <button type="button" class="btn btn-secondary" onclick="hideUpdateForm()">✖ Cancel</button>
+        </div>
+    </form>
+
+    <h2 class="mb-3">💻 Server Health</h2>
+    <div class="card p-3 shadow-lg bg-white rounded">
+        <p><strong>⚡ CPU Usage:</strong> {{ health.cpu }}%</p>
+        <p><strong>🧠 Memory Usage:</strong> {{ health.memory }}%</p>
+        <p><strong>💽 Disk Usage:</strong> {{ health.disk }}%</p>
+        <p><strong>⏱ Uptime:</strong> {{ health.uptime }}</p>
+    </div>
+</div>
+
+<script>
+    // Loader
+    $(window).on('load', function() {
+        $("#loader-wrapper").fadeOut("slow");
+    });
+
+    // Show update form
+    function showUpdateForm(id, task) {
+        let form = document.getElementById("updateForm");
+        form.action = "/update/" + id;
+        document.getElementById("updateTaskInput").value = task;
+        form.classList.remove("d-none");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hideUpdateForm() {
+        document.getElementById("updateForm").classList.add("d-none");
+    }
+</script>
+</body>
+</html>
